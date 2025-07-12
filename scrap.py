@@ -83,6 +83,31 @@ def get_country(page):
 
 
 
+def get_quantity_required(page):
+
+    all_quantities = []
+
+    quantity_element = page.wait_for_selector("div.brh-rfq-item__quantity")
+    time.sleep(3)
+
+    quantity_divs  = page.query_selector_all("div.brh-rfq-item__quantity")
+
+    for div in quantity_divs:
+
+        whole_text = div.text_content().strip()
+
+        label_span = div.query_selector("span")
+
+        label_text = ""
+        if label_span:
+            label_text = label_span.text_content().strip()
+
+        raw_text = whole_text.replace(label_text, "").strip()
+
+        all_quantities.append(raw_text)
+         
+    return all_quantities
+
 
 
 
