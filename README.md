@@ -61,4 +61,4 @@ It navigates RFQ listing pages, scrapes detailed buyer info, and saves the data 
 1. **Install dependencies**
    ```bash
    pip install -r requirements.txt
-2. ** Run main.py **
+2. **Run main.py**
