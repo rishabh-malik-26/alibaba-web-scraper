@@ -168,7 +168,6 @@ def get_buyer_tags(page):
     return buyer_tags
 
 
-
 def get_buyer_image(page):
     all_images = []  
 
@@ -193,3 +192,19 @@ def get_buyer_image(page):
 
 
 
+from sklearn.preprocessing import MultiLabelBinarizer
+import pandas as pd
+
+def tags_to_df(b_tags):
+
+    mlb = MultiLabelBinarizer()
+
+    one_hot = mlb.fit_transform(b_tags)
+
+    tags_df = pd.DataFrame(one_hot, columns=mlb.classes_)
+
+    tags_df = tags_df.astype(int)
+
+    new_df = tags_df.replace({1: 'yes', 0: 'no'})
+
+    return new_df
