@@ -223,3 +223,31 @@ def convert_relative_time(text):
         return parsed_dt.strftime('%Y-%m-%d %H:%M:%S')
     else:
         return None
+    
+
+
+def get_inquiry_date(page):
+        
+        all_date_posted = []
+
+        inquiry_date_element = page.wait_for_selector('div.brh-rfq-item__publishtime')
+        time.sleep(3)
+
+        date_divs = page.query_selector_all('div.brh-rfq-item__publishtime')
+
+        for div in date_divs:
+
+            full_text = div.text_content().strip()
+
+            span = div.query_selector("span.brh-rfq-item__label")
+            
+            if span:
+                span_text  = span.text_content().strip()
+
+            outside_text = full_text.replace(span_text, "").strip()
+
+            date = convert_relative_time(outside_text)
+
+            all_date_posted.append(date)
+
+        return all_date_posted
