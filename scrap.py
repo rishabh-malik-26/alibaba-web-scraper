@@ -135,6 +135,37 @@ def get_inquiry_time(page):
 
 
 
+def get_buyer_tags(page):
+
+    buyer_tags = []
+        # Get all main RFQ info blocks
+    rfq_infos = page.query_selector_all('div.brh-rfq-item__other-info')
+
+    for rfq in rfq_infos:
+        buyer_flag_div = rfq.query_selector('div.bc-brh-rfq-flag--buyer')
+
+        if buyer_flag_div:
+            tags_divs_inner = buyer_flag_div.query_selector_all("div.next-tag-zoom-appear-active")
+
+            if tags_divs_inner:
+                separate_tags = []
+                for td in tags_divs_inner:
+                    if td:
+                        sub_div = td.query_selector("div.next-tag-body")
+                        if sub_div:
+                            div_text = sub_div.text_content().strip()
+                            separate_tags.append(div_text)
+                        else:
+                            separate_tags.append(None)
+                    else:
+                        separate_tags.append(None)
+                buyer_tags.append(separate_tags)
+            else:
+                buyer_tags.append(None)
+        else:
+            buyer_tags.append(None)
+    
+    return buyer_tags
 
 
 
