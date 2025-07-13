@@ -169,6 +169,25 @@ def get_buyer_tags(page):
 
 
 
+def get_buyer_image(page):
+    all_images = []  
+
+    image_div_element = page.wait_for_selector('div.avatar')
+
+    image_divs = page.query_selector_all("div.avatar")
+
+    for div in image_divs:
+        if div:
+            image_tag = div.query_selector('img')
+            if image_tag:
+                image = image_tag.get_attribute('src')
+                all_images.append(image)
+            else:
+                all_images.append(None)
+        else:
+            all_images.append(None)
+    
+    return all_images
 
 
 
