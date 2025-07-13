@@ -1,6 +1,7 @@
 
 import time
-
+from datetime import datetime
+import dateparser
 
 def get_h1(page) -> list:
 
@@ -208,3 +209,17 @@ def tags_to_df(b_tags):
     new_df = tags_df.replace({1: 'yes', 0: 'no'})
 
     return new_df
+
+
+def convert_relative_time(text):
+    now = datetime.now()
+
+    parsed_dt = dateparser.parse(
+        text,
+        settings={'RELATIVE_BASE': now}
+    )
+
+    if parsed_dt:
+        return parsed_dt.strftime('%Y-%m-%d %H:%M:%S')
+    else:
+        return None
