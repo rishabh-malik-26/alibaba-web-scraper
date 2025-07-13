@@ -1,7 +1,8 @@
-
 import time
 from datetime import datetime
 import dateparser
+from urllib.parse import urlparse, parse_qs
+
 
 def get_h1(page) -> list:
 
@@ -84,6 +85,7 @@ def get_country(page):
 
 
 
+
 def get_quantity_required(page):
 
     all_quantities = []
@@ -108,8 +110,7 @@ def get_quantity_required(page):
         all_quantities.append(raw_text)
          
     return all_quantities
-
-
+ 
 
 def get_inquiry_time(page):
         all_date_posted = []
@@ -135,6 +136,27 @@ def get_inquiry_time(page):
         return all_date_posted
 
 
+def get_inquiry_urls(page):
+
+    all_inquiry_urls = []
+
+    inquiry_url_element = page.wait_for_selector('h1.brh-rfq-item__subject')
+        # time.sleep(3)
+
+    url_divs = page.query_selector_all('h1.brh-rfq-item__subject')
+
+    for div in url_divs:
+        a_tag =div.query_selector("a.brh-rfq-item__subject-link")
+
+        if a_tag:
+            href = a_tag.get_attribute("href")
+            all_inquiry_urls.append(href)
+        else:
+            all_inquiry_urls.append(None)
+
+    return all_inquiry_urls
+
+
 
 def get_buyer_tags(page):
 
@@ -157,14 +179,14 @@ def get_buyer_tags(page):
                             div_text = sub_div.text_content().strip()
                             separate_tags.append(div_text)
                         else:
-                            separate_tags.append(None)
+                            separate_tags.append([])
                     else:
-                        separate_tags.append(None)
+                        separate_tags.append([])
                 buyer_tags.append(separate_tags)
             else:
-                buyer_tags.append(None)
+                buyer_tags.append([])
         else:
-            buyer_tags.append(None)
+            buyer_tags.append([])
     
     return buyer_tags
 
@@ -192,6 +214,30 @@ def get_buyer_image(page):
 
 
 
+def get_next_page(page):
+            
+
+        try:
+            # Wait for the pagination container to appear
+            page.wait_for_selector("div.ui2-pagination-pages", timeout=5000)
+
+            pagination_div = page.query_selector("div.ui2-pagination-pages")
+            if not pagination_div:
+                return None  # Could not find pagination block
+
+            next_page = pagination_div.query_selector("a.next")
+            if next_page:
+                href = next_page.get_attribute("href")
+                if href:
+                    if href.startswith("//"):
+                        href = "https:" + href
+                    elif href.startswith("/"):
+                        href = "https://sourcing.alibaba.com" + href
+                    return href
+            return None  # No next link found
+
+        except Exception as e:
+            return str(e)  # Safer to return str instead of raw Exception
 
 from sklearn.preprocessing import MultiLabelBinarizer
 import pandas as pd
@@ -211,6 +257,8 @@ def tags_to_df(b_tags):
     return new_df
 
 
+
+
 def convert_relative_time(text):
     now = datetime.now()
 
@@ -223,7 +271,7 @@ def convert_relative_time(text):
         return parsed_dt.strftime('%Y-%m-%d %H:%M:%S')
     else:
         return None
-    
+
 
 
 def get_inquiry_date(page):
@@ -251,3 +299,36 @@ def get_inquiry_date(page):
             all_date_posted.append(date)
 
         return all_date_posted
+
+
+
+def get_rfq_uuid_from_url(url):
+    """
+    Takes a single RFQ detail page URL and returns the UUID.
+    If not found, returns None.
+    """
+    parsed = urlparse(url)
+    qs = parse_qs(parsed.query)
+    uuid = qs.get('uuid', [None])[0]
+    return uuid
+
+
+def get_rfq(page):
+    
+    page.wait_for_selector('a.brh-rfq-item__subject-link')
+
+    subject_links = page.query_selector_all('a.brh-rfq-item__subject-link')
+
+    all_rfqs = []
+    for link in subject_links:
+        href = link.get_attribute('href')
+        if href:
+            if href.startswith('//'):  # Alibaba uses protocol-relative URLs
+                href = 'https:' + href
+                rfq = get_rfq_uuid_from_url(href)
+            all_rfqs.append(rfq)
+        else:
+            all_rfqs.append(None)
+
+    return all_rfqs
+
